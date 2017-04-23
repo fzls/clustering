@@ -1,20 +1,20 @@
 # 实现的聚类算法集（接口参照[scikit-learn](http://scikit-learn.org/stable/modules/classes.html#classes))
 1. [x] K-means
     1. [x] basic version
-    2. [ ] mini-batch
-    3. [ ] bisecting
+    2. [x] mini-batch
+    3. [x] bisecting
 2. [x] DBSCAN
 3. [ ] X-means
 4. [ ] K-medoid
 5. [ ] Learning vector quantization
 6. [ ] Shared Nearest Neighbor Clustering
-7. [ ] Hierarchical(divisive VS agglomerative)
-    1. [ ] min
-    2. [ ] max
-    3. [ ] average
-    4. [ ] centroid
-    5. [ ] [Minimum energy clustering](https://en.wikipedia.org/wiki/Energy_distance)
-    6. [ ] [Ward](https://en.wikipedia.org/wiki/Ward%27s_method)
+7. [x] Hierarchical(divisive VS agglomerative)
+    1. [x] min
+    2. [x] max
+    3. [x] average
+    4. [x] centroid
+    5. [x] [Minimum energy clustering](https://en.wikipedia.org/wiki/Energy_distance)
+    6. [x] [Ward](https://en.wikipedia.org/wiki/Ward%27s_method)
 8. [ ] Affinity Propagation
 9. [ ] Mean-Shift
 10. [ ] Spectral Clustering

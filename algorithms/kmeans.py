@@ -3,6 +3,7 @@
 import random
 
 from algorithms.cluster import Cluster
+from utils.metrics import distance
 from utils.log import log
 
 
@@ -11,8 +12,10 @@ class KMeans(Cluster):
         """
         :param n_clusters: 聚类个数
         :param max_iter: 迭代次数上限
+        Number of time the k-means algorithm will be run with different centroid seeds. The final results will be the best output of n_init consecutive runs in terms of inertia.
         """
         # TODO: 添加剩余参数的支持
+        self.iter = 0
         self.n_clusters = n_clusters
         self.changed = False
         self.max_iter = max_iter
@@ -25,45 +28,50 @@ class KMeans(Cluster):
         """
         # 初始化聚类中心和聚类
         # TODO: 1.random 2. kmeans++
-        items = [tuple(item) for item in items]
+        # re: 取消下标，改用元素本身
+        # items = [tuple(item) for item in items]
         centers = self.init(items)
         clusters = [[] for cluster in range(self.n_clusters)]
 
-        iter = 0
+        self.iter = 0
         while True:
-            iter += 1
+            self.iter += 1
             self.changed = False
 
-            self.update_clusters(centers, items, clusters)
-            log.debug('\n[cluster]: %s\n[center]: %s' % (clusters, centers))
-            self.update_centers(centers, items, clusters)
+            self.update(centers, clusters, items)
 
-            if self.finished(iter):
+            if self.finished():
                 break
-        log.info(iter)
+        log.info("cluster iter: %d" % self.iter)
+        log.info(centers)
 
         return clusters
 
-    def update_centers(self, centers: list, items: list, clusters: list) -> None:
+    def update(self, centers, clusters, items):
+        self.update_clusters(centers, items, clusters)
+        log.debug('\n[cluster]: %s\n[center]: %s' % (clusters, centers))
+        self.update_centers(centers, clusters)
+
+    def update_centers(self, centers: list, clusters: list) -> None:
         """
         更新聚类中心
         :param centers: 聚类中心
-        :param items: 数据集
         :param clusters: 聚类
         """
         for cluster_index, cluster in enumerate(clusters):
-            new_center = self.get_new_center(cluster, items)
+            new_center = self.get_new_center(cluster)
             if centers[cluster_index] != new_center:
                 self.changed = True
             centers[cluster_index] = new_center
+        pass
 
-    def get_new_center(self, cluster: list, items: list) -> tuple:
+    def get_new_center(self, cluster: list) -> tuple:
         """获取新的聚类中心（通过取聚类中各数据的中心值）"""
-        dim = len(items[0])
+        dim = len(cluster[0][self.VALUE])
         _sum = [0 for i in range(dim)]
-        for item_index in cluster:
+        for _, item in cluster:
             for i in range(dim):
-                _sum[i] += items[item_index][i]
+                _sum[i] += item[i]
         new_center = tuple(_s / len(cluster) for _s in _sum)
         return new_center
 
@@ -81,13 +89,16 @@ class KMeans(Cluster):
         # 根据当前聚类中心得到新的聚类结果
         for item_index, item in enumerate(items):
             # 找到与该数据点最接近的聚类中心
-            nearest_cluster_index = 0
-            for cluster_index, center in enumerate(centers):
-                if self.distance(center, item) < self.distance(centers[nearest_cluster_index], item):
-                    nearest_cluster_index = cluster_index
+            nearest_cluster_index = self.get_nearest_center(centers, item, item_index)# 将该数据点分配到该聚类中心所在聚类
+            clusters[nearest_cluster_index].append((item_index, item))
 
-            # 将该数据点分配到该聚类中心所在聚类
-            clusters[nearest_cluster_index].append(item_index)
+    def get_nearest_center(self, centers, item, item_index):
+        nearest_cluster_index = item_index % len(centers)
+        for cluster_index, center in enumerate(centers):
+            if distance(center, item) < distance(centers[nearest_cluster_index], item):
+                nearest_cluster_index = cluster_index
+
+        return nearest_cluster_index
 
     def init(self, items: list) -> list:
         """初始化聚类中心"""
@@ -105,11 +116,20 @@ class KMeans(Cluster):
         pass
         return []
 
-    def finished(self, iter: int) -> bool:
+    def init_by_agglomerative_clustering(self, items: list)->list:
+        from algorithms.agglomerative_clustering import AgglomerativeClustering
+        from utils.metrics import avg_of_items
+        clusters = AgglomerativeClustering(self.n_clusters).fit(items)
+        avgs = [avg_of_items(cluster) for cluster in clusters]
+        log.info(avgs)
+        return avgs
+
+    def finished(self) -> bool:
         """判断是否可以结束算法"""
-        return not self.changed or iter >= self.max_iter
+        return not self.changed or self.iter >= self.max_iter
 
 
 if __name__ == '__main__':
-    from utils.functions import test_iris
+    from utils.functions import test_dummy_data,test_iris
+
     test_iris(KMeans(3))
