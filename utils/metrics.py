@@ -33,30 +33,54 @@ def distance_cluster(c1, c2):
     return [distance(c1[i], c2[j]) for i in range(len(c1)) for j in range(len(c2))]
 
 
-def odd(num):
-    return num & 1
+def magnitude(item: tuple)->float:
+    _item = fixup(item)
+    zero = tuple(0 for dim in range(len(_item[Cluster.VALUE])))
 
+    return distance(item, zero)
 
-def even(num):
-    return not odd(num)
-
+# def odd(num):
+#     return num & 1
+#
+#
+# def even(num):
+#     return not odd(num)
+#
+#
+# def _centroid(c1, c2):
+#     data = distance_cluster(c1, c2)
+#     n = len(data)
+#     mid = n // 2
+#     _data = sorted(data)
+#     return _data[mid] if odd(n) else (_data[mid - 1] + _data[mid]) / 2
 
 def _centroid(c1, c2):
-    data = distance_cluster(c1, c2)
-    n = len(data)
-    mid = n // 2
-    _data = sorted(data)
-    return _data[mid] if odd(n) else (_data[mid - 1] + _data[mid]) / 2
-
+    """distance of the centroid of two cluster as their distance"""
+    return distance(avg_of_items(c1), avg_of_items(c2))
 
 def avg_of_items(items):
     dim = len(items[0][Cluster.VALUE])
     return tuple(reduce(lambda s, item: s + item[Cluster.VALUE][i], items, 0) / len(items) for i in range(dim))
 
+
+def variance_of_items(items):
+    import statistics
+    dim = len(items[0][Cluster.VALUE])
+
+    if len(items) == 1:
+        return tuple(0 for i in range(dim))
+    else:
+        return tuple(statistics.variance([item[Cluster.VALUE][i] for item in items]) for i in range(dim))
+
 def ssd(items):
     """sum-of-squared-difference"""
     avg = avg_of_items(items)
     return sum([distance(item, (-1, avg)) ** 2 for item in items])
+
+def avg_distance(items):
+    _avg = avg_of_items(items)
+    r = [distance(item, (-1, _avg)) for item in items]
+    return sum(r)/len(r)
 
 
 def _ward(c1, c2):

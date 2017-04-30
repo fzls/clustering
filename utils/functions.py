@@ -17,7 +17,7 @@ def data_iris() -> list:
 def _test(cluster: Cluster, data: list):
     log.info("\ndata: %s"%data)
     res = cluster.fit(data)
-    log.info('\n'+'\n\n'.join(["Cluster %d: %s"%(c, r) for c, r in enumerate(res)]))
+    log.info('\n'+'\n\n'.join(["Cluster %d: %s"%(c, r) for c, r in enumerate(sorted(res))]))
 
 
 def test_iris(cluster: Cluster):
@@ -26,9 +26,9 @@ def test_iris(cluster: Cluster):
 
 def test_dummy_data(cluster: Cluster):
     data = [
-        (1, 2), (1, 2), (1, 2), (1, 2), (1, 2), (1, 2),(1, 2), (1, 2), (1, 2),
-        # (1, 2), (1, 2), (1, 2), (3, 4), (5, 6),
-        # (100, 102), (104, 106),
-        # (1001, 1005), (1009, 1010)
+        # (1, 2), (1, 2), (1, 2), (1, 2), (1, 2), (1, 2),(1, 2), (1, 2), (1, 2),
+        (100, 102), (104, 106), (103, 103), (101, 99),
+        (1, 2), (3, 4), (5, 6),
+        (1001, 1005), (1009, 1010),(1003, 1008)
     ]
     _test(cluster, data)
